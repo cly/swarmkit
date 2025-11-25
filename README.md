@@ -2,6 +2,8 @@
 
 SwarmKit lets you run and orchestrate terminal-based AI agents in secure sandboxes with built-in observability.
 
+**[REQUEST ACCESS](https://dashboard.swarmlink.ai/request-access)**
+
 ## Get Started
 
 **TypeScript:**
@@ -17,6 +19,7 @@ pip install swarmkit
 Get your API keys:
 - **SwarmKit API key** - Sign up at https://dashboard.swarmlink.ai/request-access
 - **E2B API key** - Sign up at https://e2b.dev
+
 
 ## Documentation
 

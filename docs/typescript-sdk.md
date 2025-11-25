@@ -4,6 +4,8 @@ SwarmKit lets you run and orchestrate terminal-based AI agents in secure sandbox
 
 This guide walks through every surface of the SDK in the order you normally wire things up. Every example below is real code.
 
+**[REQUEST ACCESS](https://dashboard.swarmlink.ai/request-access)**
+
 ## Get Started
 
 Install the SDK:
@@ -15,6 +17,7 @@ npm install @swarmkit/sdk @swarmkit/e2b
 Get your API keys:
 - **SwarmKit API key** - Sign up at https://dashboard.swarmlink.ai/request-access
 - **E2B API key** - Sign up at https://e2b.dev
+
 
 ## Reporting Bugs
 
