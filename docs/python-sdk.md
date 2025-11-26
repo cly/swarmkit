@@ -303,10 +303,10 @@ Calling `run` or `execute_command` for the first time provisions the workspace:
 
 ```
 /home/user/workspace/
-    ├── output/    # Final artifacts (returned to caller)
-    ├── scripts/   # Generated code
-    ├── context/   # Input files from context
-    └── temp/      # Scratch space
+├── context/   # Input files (read-only) provided by the user
+├── scripts/   # Your code goes here
+├── temp/      # Scratch space
+└── output/    # Final deliverables
 ```
 Files passed to `context` are uploaded to `context/`. Files passed to `files` are uploaded relative to the working directory.
 
@@ -314,19 +314,16 @@ SwarmKit also writes a default system prompt:
 
 ```
 You are running in a sandbox environment.
-Current directory: /home/user/workspace/
+Present working directory: /home/user/workspace/
 
-Directory structure:
+IMPORTANT - Directory structure:
 /home/user/workspace/
-  ├── output/      # Save all final results, reports, and artifacts here
-  ├── scripts/     # Write and run any code you generate here
-  ├── context/     # User-provided input files and data (read from here)
-  └── temp/        # Temporary files and intermediate processing
+├── context/   # Input files (read-only) provided by the user
+├── scripts/   # Your code goes here
+├── temp/      # Scratch space
+└── output/    # Final deliverables
 
-* Always save your final work to output/. The content of output/ will be sent back to the user.
-* Use scripts/ for any code you need to write and execute.
-* context/ contains all user-provided input files and data, read when necessary.
-* Use temp/ to save any temporary and intermediate processing files.
+IMPORTANT - Always save deliverables to output/. The user only receives this folder.
 ```
 
 Any string passed to `system_prompt` is appended after this default.
