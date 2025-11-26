@@ -1,115 +1,124 @@
 # SwarmKit TypeScript SDK
 
-SwarmKit lets you run and orchestrate terminal-based AI agents in secure sandboxes with built-in observability.
+Run terminal-based AI agents in secure sandboxes with built-in observability.
 
-This guide walks through every surface of the SDK in the order you normally wire things up. Every example below is real code.
-
-**[REQUEST ACCESS](https://dashboard.swarmlink.ai/request-access)**
-
-## Get Started
-
-Install the SDK:
-
-```bash
-npm install @swarmkit/sdk @swarmkit/e2b
-```
-
-Get your API keys:
-- **SwarmKit API key** - Sign up at https://dashboard.swarmlink.ai/request-access
-- **E2B API key** - Sign up at https://e2b.dev/sign-up
-
-
-## Reporting Bugs
-
-We welcome your feedback. File a [GitHub issue](https://github.com/brandomagnani/swarmkit/issues) to report bugs or request features.
-
-## Connect on Discord
-
-Join the [SwarmKit Developers Discord](https://discord.gg/Q36D8dGyNF) to connect with other developers using SwarmKit. Get help, share feedback, and discuss your projects with the community.
+> See the [main README](../README.md) for installation and API keys.
 
 ---
 
-## 1. Build a SwarmKit instance
+## 1. Quick Start
 
 ```ts
 import { SwarmKit } from "@swarmkit/sdk";
 import { createE2BProvider } from "@swarmkit/e2b";
 
+// Create sandbox provider
 const sandbox = createE2BProvider({
-  apiKey: process.env.E2B_API_KEY!,
-  // Optional: templateId, timeoutMs (default 3_600_000 ms)
+    apiKey: process.env.E2B_API_KEY!
 });
 
-const swarmkit = new SwarmKit()  // No constructor config needed
-  .withAgent({
-    type: "codex",
-    apiKey: process.env.SWARMKIT_API_KEY!,  // Single key for all providers
-    model: "gpt-5.1-codex",  // optional - CLI uses its default if omitted
-    reasoningEffort: "medium",  // optional - only Codex uses it (other agents ignore)
-  })
-  .withSandbox(sandbox)
-  .withWorkingDirectory("/home/user/workspace")   // optional (default: /home/user/workspace)
-  .withWorkspaceMode("knowledge")                 // "knowledge" (default) or "swe"
-  .withSystemPrompt("You are a careful pair programmer.") // optional
-  .withSecrets({ GITHUB_TOKEN: process.env.GITHUB_TOKEN! }) // optional
-  .withSessionTagPrefix("my-project")             // optional - adds semantic label to observability logs (see section 5)
-  .withContextFiles([
-    { path: "docs/readme.txt", data: "User provided context…" },
-  ]) // optional, see section 4
-  .withMcpServers({
-    // STDIO transport (most common)
-    "search_bravesearch": {
-      command: "npx",
-      args: [
-        "-y",
-        "@modelcontextprotocol/server-brave-search"
-      ],
-      env: {
-        BRAVE_API_KEY: process.env.BRAVE_API_KEY!
-      }
-    },
-    // SSE transport (remote servers - not supported by Codex)
-    "remote-api": {
-      type: "sse",
-      url: "https://api.example.com/mcp/sse",
-      headers: {
-        Authorization: "Bearer YOUR_TOKEN"
-      }
-    },
-    // HTTP transport (remote servers - not supported by Codex)
-    "http-service": {
-      type: "http",
-      url: "https://api.example.com/mcp",
-      headers: {
-        Authorization: "Bearer YOUR_TOKEN"
-      }
-    }
-  }); // optional, agent-specific MCP support (Codex only supports STDIO)
+// Build SwarmKit instance
+const swarmkit = new SwarmKit()
+    .withAgent({
+        type: "codex",
+        apiKey: process.env.SWARMKIT_API_KEY!
+    })
+    .withSandbox(sandbox)
+    .withSystemPrompt("You are a helpful coding assistant.")
+    .withMcpServers({
+        "exa": {
+            command: "npx",
+            args: ["-y", "mcp-remote", "https://mcp.exa.ai/mcp"],
+            env: { EXA_API_KEY: process.env.EXA_API_KEY! }
+        }
+    });
+
+// Run agent
+const result = await swarmkit.run({
+    prompt: "Create a hello world script"
+});
+
+console.log(result.stdout);
+
+// Clean up
+await swarmkit.kill();
 ```
-
-Everything above is a fluent setter.  The instance does not reach the sandbox until you call one of the runtime methods (`run`, `executeCommand`, …).
-
-**Initialization:** Context files, MCP servers, and system prompt are set up once on first `run()` or `executeCommand()` call. Using `withSession()` to reconnect skips all setup.
-
-### Agent selection cheat sheet
-
-**All agents use a single SwarmKit API key** (get yours from the [SwarmKit dashboard](https://dashboard.swarmlink.ai/request-access)).
-
-| Agent type       | Notes |
-|------------------|-------|
-| `"codex"`        | • Supports `reasoningEffort`<br>• `run()` auto-resumes past turns |
-| `"claude"`       | • `run()` auto-resumes past turns |
-| `"gemini"`       | • `run()` auto-resumes past turns |
-| `"acp-gemini"`   | • Agent Client Protocol<br>• Persistent session across `run()` calls<br>• Auto-resumes past turns |
-| `"acp-qwen"`     | • Agent Client Protocol<br>• Persistent session across `run()` calls<br>• Auto-resumes past turns |
-| `"acp-claude"`   | • Agent Client Protocol<br>• Persistent session across `run()` calls<br>• Auto-resumes past turns |
-| `"acp-codex"`    | • Agent Client Protocol<br>• Persistent session across `run()` calls<br>• Auto-resumes past turns<br>• Supports `reasoningEffort` |
-
-> **Gateway routing**: All requests are automatically routed through the SwarmKit gateway, which handles provider authentication and cost tracking. You no longer need individual provider API keys (OpenAI, Anthropic, Google, etc.).
 
 ---
 
-## 2. Runtime methods (hands-on)
+## 2. Configuration
+
+```ts
+const swarmkit = new SwarmKit()
+
+    // (required) Agent type and API key
+    .withAgent({
+        type: "codex",
+        apiKey: process.env.SWARMKIT_API_KEY!,
+        model: "gpt-5.1-codex",               // (optional) Uses default if omitted
+        reasoningEffort: "medium",            // (optional) Only Codex agents use this
+    })
+
+    // (required) Sandbox provider for execution
+    .withSandbox(sandbox)
+
+    // (optional) Custom working directory, default: /home/user/workspace
+    .withWorkingDirectory("/home/user/workspace")
+
+    // (optional) Workspace mode: "knowledge" (default) for knowledge work use cases or "swe" for coding use cases
+    .withWorkspaceMode("knowledge")
+
+    // (optional) System prompt appended to default instructions
+    .withSystemPrompt("You are a careful pair programmer.")
+
+    // (optional) Environment variables injected into sandbox
+    .withSecrets({
+        GITHUB_TOKEN: process.env.GITHUB_TOKEN!
+    })
+
+    // (optional) Prefix for observability logs
+    .withSessionTagPrefix("my-agent")
+
+    // (optional) Files uploaded to workspace/context/ on first run
+    .withContextFiles([
+        { path: "docs/readme.txt", data: "User provided context..." },
+    ])
+
+    // (optional) MCP servers for agent tools
+    .withMcpServers({
+        "exa": {
+            command: "npx",
+            args: ["-y", "mcp-remote", "https://mcp.exa.ai/mcp"],
+            env: { EXA_API_KEY: process.env.EXA_API_KEY! }
+        }
+    });
+```
+
+**Note:**
+- Configuration methods can be chained in any order.
+- The sandbox is created on the first `run()` or `executeCommand()` call (see below).
+- Context files, MCP servers, and system prompt are set up once on the first call.
+- Using `.withSession()` to reconnect skips setup since the sandbox already exists.
+
+---
+
+## 3. Agents
+
+All agents use a single SwarmKit API key from [dashboard.swarmlink.ai](https://dashboard.swarmlink.ai/).
+
+| Type         | Recommended Models                                        | Notes                                                                         |
+|--------------|-----------------------------------------------------------|-------------------------------------------------------------------------------|
+| `codex`      | `gpt-5.1`, `gpt-5.1-codex`, `gpt-5.1-codex-max`           | • Codex Agent<br>• persistent memory<br>• supports `reasoningEffort`          |
+| `claude`     | `claude-opus-4-5`, `claude-sonnet-4-5`                    | • Claude agent<br>• persistent memory                                         |
+| `gemini`     | `gemini-3-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash` | • Gemini agent<br>• persistent memory                                      |
+| `acp-codex`  | `gpt-5.1`, `gpt-5.1-codex`, `gpt-5.1-codex-max`           | • Codex via ACP<br>• persistent ACP session + memory<br>• supports `reasoningEffort` |
+| `acp-claude` | `claude-opus-4-5`, `claude-sonnet-4-5`                    | • Claude via ACP<br>• persistent ACP session + memory                         |
+| `acp-gemini` | `gemini-3-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash` | • Gemini via ACP<br>• persistent ACP session + memory                      |
+| `acp-qwen`   | `qwen3-coder-plus`, `qwen3-vl-plus`, `qwen3-max-preview`  | • Qwen via ACP<br>• persistent ACP session + memory                           |
+
+---
+
+## 4. Runtime Methods
 
 All runtime calls are `async` and return a shared `AgentResponse`:
 
@@ -122,39 +131,38 @@ type AgentResponse = {
 };
 ```
 
-### 2.1 `run`
+### 4.1 `run`
 
-Generates work by delegating to the agent CLI.
-
-**All agents auto-resume past conversation turns** 
+Runs the agent with a given prompt. 
 
 ```ts
-// Agent maintains conversation state automatically
 const result = await swarmkit.run({
-  prompt: "Now add unit tests for the foo module.",
-  timeoutMs: 15 * 60 * 1000, // optional (default 1 hour)
+    prompt: "Analyze the data and create a report",
+    timeoutMs: 15 * 60 * 1000,                // (optional) Default 1 hour
 });
 
-console.log(result.exitCode, result.stdout);
+console.log(result.exitCode);
+console.log(result.stdout);
 ```
 
-If `timeoutMs` is omitted the agent uses the TypeScript default of 3_600_000 ms.
+- If `timeoutMs` is omitted the agent uses the TypeScript default of 3_600_000 ms (1 hour).
 
-### 2.2 `executeCommand`
+- Calling `run()` multiple times maintains the agent context / history. 
+
+### 4.2 `executeCommand`
 
 Runs a direct shell command in the sandbox working directory.
 
-The command automatically executes in the directory set by `withWorkingDirectory()` (default: `/home/user/workspace`).
-
 ```ts
-// Runs "pytest" inside /home/user/workspace (or your custom working directory)
-await swarmkit.executeCommand("pytest", {
-  timeoutMs: 10 * 60 * 1000,  // optional (default 1 hour)
-  background: false,           // optional (default false)
+// Run shell command directly in sandbox
+const result = await swarmkit.executeCommand("pytest", {
+    timeoutMs: 10 * 60 * 1000,                // (optional) Default 1 hour
+    background: false,                         // (optional) Run in background
 });
 ```
+- The command automatically executes in the directory set by `withWorkingDirectory()` (default: `/home/user/workspace`).
 
-### 2.3 Streaming events
+### 4.3 Streaming events
 
 `SwarmKit` extends Node's `EventEmitter`. Both `run()` and `executeCommand()` stream output in real-time during execution:
 
@@ -182,7 +190,7 @@ swarmkit.on("error", message => console.error("[error]", message));
 
 All listeners are optional; if omitted the agent still runs and you can inspect the return value after completion.
 
-### 2.4 `uploadFile`
+### 4.4 `uploadFile`
 
 Write files to the sandbox.  Accepts `string`, `Buffer`, or `ArrayBuffer`.  You can send a single path+content pair or an array.
 
@@ -197,7 +205,7 @@ await swarmkit.uploadFile([
 
 **Note:** Unlike `withContextFiles()` which auto-prefixes relative paths to `context/`, `uploadFile()` uses paths exactly as given.
 
-### 2.5 `getOutputFiles`
+### 4.5 `getOutputFiles`
 
 Fetch new files from `/output` after a run/command.  Files created before the last operation are filtered out.
 
@@ -215,7 +223,7 @@ for (const file of files) {
 
 Each entry includes `name`, `path`, `content`, `size`, `modifiedTime`.
 
-### 2.6 Session controls
+### 4.6 Session controls
 
 ```ts
 const sessionId = await swarmkit.getSession();  // Returns sandbox ID (string) or null
@@ -230,7 +238,7 @@ await swarmkit.setSession("existing-sandbox-id"); // Sets sandbox ID; reconnecti
 
 `withSession("sandbox-id")` is a builder method equivalent to `setSession()` - use it during initialization to reconnect to an existing sandbox.
 
-### 2.7 `getHost`
+### 4.7 `getHost`
 
 Expose a forwarded port:
 
@@ -238,13 +246,13 @@ Expose a forwarded port:
 const url = await swarmkit.getHost(8000);
 console.log(`Workspace service available at ${url}`);
 ```
-
 ---
 
-## 3. Workspace setup
+## 5. Workspace setup and Modes
 
-### Knowledge mode (default)
+### 5.1 Knowledge Mode (default)
 
+Ideal for knowledge work applications.
 ```ts
 swarmkit.withWorkspaceMode("knowledge"); // implicit default
 ```
@@ -253,12 +261,11 @@ Calling `run` or `executeCommand` for the first time provisions the workspace:
 
 ```
 /home/user/workspace/
-  ├── output/    # return artifacts to caller
-  ├── scripts/   # generated code to run
-  ├── context/   # uploaded input data
-  └── temp/      # scratch space
+    ├── output/    # Final artifacts (returned to caller)
+    ├── scripts/   # Generated code
+    ├── context/   # Input files from withContextFiles()
+    └── temp/      # Scratch space
 ```
-
 Relative context file paths are automatically prefixed with `${workingDirectory}/context/`.  Provide absolute paths if you need to write elsewhere.
 
 SwarmKit also writes a default system prompt:
@@ -282,17 +289,20 @@ Directory structure:
 
 Any string passed to `withSystemPrompt()` is appended after this default.
 
-### SWE mode
 
+### 5.2 SWE Mode
+
+Ideal for coding applications (when working with repositories).
 ```ts
 swarmkit.withWorkspaceMode("swe");
 ```
 
 SWE mode skips directory scaffolding and does **not** prepend the workspace instructions above—useful when targeting an existing repository layout.  All other features (`withSystemPrompt`, `withContextFiles`, etc.) continue to work normally.
 
+
 ---
 
-## 4. Cleaning up and session management
+## 6. Cleaning up and session management
 
 **Multi-turn conversations** (most common):
 
@@ -304,10 +314,12 @@ const swarmkit = new SwarmKit()
 await swarmkit.run({ prompt: 'Analyze data.csv' });
 const files = await swarmkit.getOutputFiles();
 
-await swarmkit.run({ prompt: 'Now create visualization' });  // Automatically continues conversation
+// Still same session, automatically maintains context / history
+await swarmkit.run({ prompt: 'Now create visualization' });  
 const files2 = await swarmkit.getOutputFiles();
 
-await swarmkit.run({ prompt: 'Export to PDF' });  // Still same session
+// Still same session, automatically maintains context / history
+await swarmkit.run({ prompt: 'Export to PDF' });  
 const files3 = await swarmkit.getOutputFiles();
 
 await swarmkit.kill();  // When done
@@ -326,7 +338,7 @@ await swarmkit.pause();  // Suspend billing, keep state
 await swarmkit.resume();  // Reactivate same sandbox
 await swarmkit.run({ prompt: 'Continue analysis' });  // Session intact
 
-await swarmkit.kill();  // When done
+await swarmkit.kill();  // Kill the Sandbox when done
 ```
 
 **Save and reconnect** (different script/session):
@@ -376,7 +388,7 @@ await swarmkit.run({ prompt: 'Compare results' });  // Back to sandbox A
 
 ---
 
-## 5. Observability
+## 7. Observability
 
 Full execution traces—including tool calls, file operations (read/write/edit), text responses, and reasoning chunks—are logged to your SwarmKit dashboard at **https://dashboard.swarmlink.ai/traces** for debugging and replay.
 
@@ -435,59 +447,3 @@ Use the tag together with the sandbox id to correlate logs with files saved in
 `/output/`.
 
 ---
-
-## 6. Sandbox provider API (E2B)
-
-`createE2BProvider(config)` returns a `SandboxProvider` that covers every method SwarmKit uses:
-
-- `create(envs, agentType, workingDirectory)` provisions a new sandbox, creates the workspace directories, and honours the `timeoutMs` you pass (default 1 hour).
-- `resume(sandboxId)` re-attaches to a paused/previous sandbox.
-- `commands.run` executes shell commands; `commands.runWithHandle` fuels the ACP bridge; `files.read` / `files.write` implement file I/O.
-- `getHost(port)` handles port forwarding via the underlying provider.
-
-If you need a different sandbox backend you can implement the `SandboxProvider` interface and plug it into `.withSandbox()`.
-
----
-
-## 7. Error handling
-
-Errors from `run()` and `executeCommand()` are handled in two ways:
-
-1. **Error event**: Triggers the `"error"` event on the SwarmKit instance
-2. **Exception thrown**: Rejects the promise with an error message
-
-Always attach an error listener if you want real-time error notifications:
-
-```ts
-swarmkit.on("error", message => console.error("[error]", message));
-
-try {
-  await swarmkit.executeCommand("exit 1");
-} catch (error) {
-  console.error("Command failed:", error);
-}
-```
-
----
-
-## 8. Secrets, MCP servers, and system prompts
-
-- `withSecrets({ MY_TOKEN: "..." })` injects environment variables into the sandbox create call.
-- `withSystemPrompt` writes an agent-specific prompt file (e.g., `AGENTS.md`, `CLAUDE.md`) inside the workspace.
-- `withMcpServers` lets agents that support the Model Context Protocol (Claude, Codex, Gemini, ACP variants) write their configuration automatically.
-
-All three are optional and can be mixed as needed.
-
----
-
-## 9. Recap checklist
-
-1. `createE2BProvider({ apiKey, timeoutMs? })`
-2. Build a `SwarmKit` instance with `.withAgent()` and `.withSandbox()`
-3. Attach event listeners (`stdout`, `stderr`, `update`, `error`)
-4. `await run` or `await executeCommand`
-5. Fetch artifacts via `getOutputFiles`
-6. Manage sandbox lifecycle with `getSession`, `setSession`, `pause`, `resume`, `kill`
-7. Use `uploadFile`, `withContextFiles`, and `withSecrets` to seed the environment
-
-Happy shipping!
