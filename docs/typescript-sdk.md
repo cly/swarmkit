@@ -41,6 +41,12 @@ const result = await swarmkit.run({
 
 console.log(result.stdout);
 
+// Get output files
+const files = await swarmkit.getOutputFiles();
+for (const file of files) {
+    console.log(`${file.name} (${file.size} bytes)`);
+}
+
 // Clean up
 await swarmkit.kill();
 ```

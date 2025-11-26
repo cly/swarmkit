@@ -40,6 +40,11 @@ result = await swarmkit.run(prompt='Create a hello world script')
 
 print(result.stdout)
 
+# Get output files
+files = await swarmkit.get_output_files()
+for file in files:
+    print(f"{file.name} ({file.size} bytes)")
+
 # Clean up
 await swarmkit.kill()
 ```
