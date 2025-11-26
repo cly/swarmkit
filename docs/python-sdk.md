@@ -45,7 +45,7 @@ await swarmkit.kill()
 
 ---
 
-## 2. Configuration
+## 2. Full Configuration
 
 ```python
 swarmkit = SwarmKit(

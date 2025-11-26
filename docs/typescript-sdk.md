@@ -46,7 +46,7 @@ await swarmkit.kill();
 
 ---
 
-## 2. Configuration
+## 2. Full Configuration
 
 ```ts
 const swarmkit = new SwarmKit()
