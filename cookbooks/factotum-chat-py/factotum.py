@@ -59,6 +59,9 @@ async def main():
         prompt = input("\nyou: ").strip()
         if not prompt:
             continue
+        if prompt in ("/quit", "/exit", "/q"):
+            print("\n👋 Goodbye")
+            break
 
         print()
         await agent.run(prompt=prompt)

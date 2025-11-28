@@ -18,7 +18,7 @@ cp .env.example .env
 npx tsx factotum.ts
 ```
 
-Ask anything and check the traces at https://dashboard.swarmlink.ai/traces.
+Ask anything and check the traces at https://dashboard.swarmlink.ai/traces. Type `/quit` to exit.
 
 ## What it does
 

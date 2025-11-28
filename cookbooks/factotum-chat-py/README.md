@@ -21,7 +21,7 @@ source .venv/bin/activate
 python factotum.py
 ```
 
-Ask anything and check the traces at https://dashboard.swarmlink.ai/traces.
+Ask anything and check the traces at https://dashboard.swarmlink.ai/traces. Type `/quit` to exit.
 
 ## What it does
 

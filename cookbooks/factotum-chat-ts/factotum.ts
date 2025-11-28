@@ -53,6 +53,10 @@ async function main() {
   while (true) {
     const prompt = (await ask("\nyou: ")).trim();
     if (!prompt) continue;
+    if (["/quit", "/exit", "/q"].includes(prompt)) {
+      console.log("\n👋 Goodbye");
+      process.exit(0);
+    }
 
     console.log();
     await agent.run({ prompt });
