@@ -10,10 +10,10 @@
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
 cp .env.example .env
-# Edit .env with your API keys
 ```
+
+- Edit `.env` with your API keys: `SWARMKIT_API_KEY`, `E2B_API_KEY`, `EXA_API_KEY` (optional)
 
 ## Run
 
