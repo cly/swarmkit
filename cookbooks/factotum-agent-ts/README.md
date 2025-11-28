@@ -7,6 +7,7 @@
 ## Setup
 
 ```bash
+cd cookbooks/factotum-agent-ts
 npm install
 cp .env.example .env
 ```
