@@ -7,8 +7,10 @@
 ## Get Started
 
 1. Get your **SwarmKit API key** at [dashboard.swarmlink.ai](https://dashboard.swarmlink.ai/) (new users: [request access](https://dashboard.swarmlink.ai/request-access) first)
+   - $10 free credits, NO CC REQUIRED
 
-2. Get an **E2B API key** at [e2b.dev](https://e2b.dev) for sandbox execution
+2. Sign up at [e2b.dev](https://e2b.dev/sign-in) and get an **E2B API key** for sandbox execution
+   - $100 free credits, NO CC REQUIRED
 
 3. Install the SDK:
 
