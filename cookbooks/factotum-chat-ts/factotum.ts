@@ -1,10 +1,9 @@
 /**
- * Manus Clone (TypeScript)
- * Build your own Manus in a few lines of code.
+ * Factotum Chat (TypeScript)
  * A sandboxed AI agent in your terminal that can think,
  * execute code, browse the web, read / edit files, and solve complex tasks.
  *
- * Run: npx tsx manus.ts
+ * Run: npx tsx factotum.ts
  */
 import { SwarmKit } from "@swarmkit/sdk";
 import { createE2BProvider } from "@swarmkit/e2b";
@@ -37,10 +36,10 @@ const agent = new SwarmKit()
     model: "gemini-3-pro-preview",
   })
   .withSandbox(sandbox)
-  .withSystemPrompt(`You are Manus, a powerful autonomous AI agent.
+  .withSystemPrompt(`You are Factotum, a powerful autonomous AI agent.
 You can execute code, browse the web, manage files, and solve complex tasks.`)
   .withMcpServers(mcpServers)
-  .withSessionTagPrefix("manus-clone-ts");
+  .withSessionTagPrefix("factotum-chat-ts");
 
 // ─────────────────────────────────────────────────────────────
 

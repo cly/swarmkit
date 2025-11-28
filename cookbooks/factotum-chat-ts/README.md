@@ -1,6 +1,5 @@
-# Manus Clone (TypeScript)
+# Factotum Chat (TypeScript)
 
-Build your own Manus in a few lines of code.
 A sandboxed AI agent in your terminal that can think,
 execute code, browse the web, read / edit files, and solve complex tasks.
 
@@ -16,10 +15,10 @@ cp .env.example .env
 ## Run
 
 ```bash
-npx tsx manus.ts
+npx tsx factotum.ts
 ```
 
-Ask Manus anything and check the traces at https://dashboard.swarmlink.ai/traces.
+Ask anything and check the traces at https://dashboard.swarmlink.ai/traces.
 
 ## What it does
 

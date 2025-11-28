@@ -1,7 +1,6 @@
-# Manus Clone
+# Factotum Chat (Python)
 
-Build your own Manus in a few lines of code. 
-A sandboxed AI agent in your terminal that can think, 
+A sandboxed AI agent in your terminal that can think,
 execute code, browse the web, read / edit files, and solve complex tasks.
 
 ## Setup
@@ -19,10 +18,10 @@ cp .env.example .env
 
 ```bash
 source .venv/bin/activate
-python manus.py
+python factotum.py
 ```
 
-Ask Manus anything and check the traces at https://dashboard.swarmlink.ai/traces.
+Ask anything and check the traces at https://dashboard.swarmlink.ai/traces.
 
 ## What it does
 

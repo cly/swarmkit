@@ -1,9 +1,9 @@
 {
-  "name": "manus-clone-ts",
+  "name": "factotum-chat-ts",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "tsx manus.ts"
+    "start": "tsx factotum.ts"
   },
   "dependencies": {
     "@swarmkit/sdk": "latest",

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-Manus Clone
------------
-Build your own Manus in a few lines of code. 
-A sandboxed AI agent in your terminal that can think, 
+Factotum Chat
+-------------
+A sandboxed AI agent in your terminal that can think,
 execute code, browse the web, read / edit files, and solve complex tasks.
 
-Run: python manus.py
+Run: python factotum.py
 """
 import asyncio
 import os
@@ -38,7 +37,7 @@ if os.getenv("EXA_API_KEY"):                    # optional: web search
         "env": {"EXA_API_KEY": os.getenv("EXA_API_KEY")}
     }
 
-SYSTEM_PROMPT = """You are Manus, a powerful autonomous AI agent.
+SYSTEM_PROMPT = """You are Factotum, a powerful autonomous AI agent.
 You can execute code, browse the web, manage files, and solve complex tasks."""
 
 agent = SwarmKit(
@@ -46,7 +45,7 @@ agent = SwarmKit(
     sandbox=SANDBOX,
     system_prompt=SYSTEM_PROMPT,
     mcp_servers=MCP_SERVERS,
-    session_tag_prefix="manus-clone",
+    session_tag_prefix="factotum-chat-py",
 )
 
 # ─────────────────────────────────────────────────────────────
