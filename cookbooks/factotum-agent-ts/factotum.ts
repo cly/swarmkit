@@ -1,5 +1,5 @@
 /**
- * Factotum Chat - A sandboxed AI agent in your terminal that can think, execute code,
+ * Factotum Agent - An interactive chat with a sandboxed AI agent that can think, execute code,
  * browse the web, read / edit files, and solve complex tasks.
  * Ask for anything—any files the agent creates are automatically downloaded to your local `output/` folder.
  *
@@ -39,7 +39,7 @@ const agent = new SwarmKit()
   .withSystemPrompt(`You are Factotum, a powerful autonomous AI agent.
 You can execute code, browse the web, manage files, and solve complex tasks.`)
   .withMcpServers(mcpServers)
-  .withSessionTagPrefix("factotum-chat-ts");
+  .withSessionTagPrefix("factotum-agent-ts");
 
 // ─────────────────────────────────────────────────────────────
 

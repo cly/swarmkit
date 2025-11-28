@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Factotum Chat - A sandboxed AI agent in your terminal that can think, execute code,
+Factotum Agent - An interactive chat with a sandboxed AI agent that can think, execute code,
 browse the web, read / edit files, and solve complex tasks.
 Ask for anything—any files the agent creates are automatically downloaded to your local `output/` folder.
 
@@ -44,7 +44,7 @@ agent = SwarmKit(
     sandbox=SANDBOX,
     system_prompt=SYSTEM_PROMPT,
     mcp_servers=MCP_SERVERS,
-    session_tag_prefix="factotum-chat-py",
+    session_tag_prefix="factotum-agent-py",
 )
 
 # ─────────────────────────────────────────────────────────────
