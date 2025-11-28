@@ -20,5 +20,6 @@ output/
 .DS_Store
 Thumbs.db
 
-# Node (for MCP servers)
+# Node
 node_modules/
+dist/
