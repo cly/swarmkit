@@ -1,3 +1,3 @@
-swarmkit
+swarmkit>=0.1.27
 python-dotenv
 rich
