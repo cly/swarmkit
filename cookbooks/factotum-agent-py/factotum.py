@@ -87,6 +87,7 @@ async def main():
             console.print("\n[muted]👋 Goodbye[/muted]")
             break
 
+        console.print()
         renderer.reset()
         renderer.start_live()
         await agent.run(prompt=prompt)
