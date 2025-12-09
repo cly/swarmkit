@@ -65,7 +65,7 @@ const swarmkit = new SwarmKit()
         type: "codex",
         apiKey: process.env.SWARMKIT_API_KEY!,
         model: "gpt-5.1-codex",               // (optional) Uses default if omitted
-        reasoningEffort: "medium",            // (optional) "medium" | "high" - Only Codex agents
+        reasoningEffort: "medium",            // (optional) "low" | "medium" | "high" | "xhigh" - Only Codex agents
     })
 
     // (required) Sandbox provider for execution
@@ -121,18 +121,12 @@ const swarmkit = new SwarmKit()
 
 All agents use a single SwarmKit API key from [dashboard.swarmlink.ai](https://dashboard.swarmlink.ai/).
 
-| Type         | Recommended Models                                        | Notes                                                                         |
-|--------------|-----------------------------------------------------------|-------------------------------------------------------------------------------|
-| `codex`      | `gpt-5.1`, `gpt-5.1-codex`, `gpt-5.1-codex-mini`          | • Codex Agent<br>• persistent memory<br>• `reasoningEffort`: `medium`, `high` |
-| `claude`     | `claude-opus-4-5-20251101` (`opus`), `claude-sonnet-4-5-20250929` (`sonnet`)                   | • Claude agent<br>• persistent memory                                         |
-| `gemini`     | `gemini-3-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash` | • Gemini agent<br>• persistent memory                                      |
-| `acp-codex` [experimental]  | `gpt-5.1`, `gpt-5.1-codex`, `gpt-5.1-codex-mini`          | • Codex via ACP<br>• persistent ACP session + memory<br>• `reasoningEffort`: `medium`, `high` |
-| `acp-claude` [experimental] | `claude-opus-4-5-20251101`(`opus`), `claude-sonnet-4-5-20250929`(`sonnet`)                    | • Claude via ACP<br>• persistent ACP session + memory                         |
-| `acp-gemini` [experimental] | `gemini-3-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash` | • Gemini via ACP<br>• persistent ACP session + memory                      |
-| `acp-qwen` [experimental]   | `qwen3-coder-plus`, `qwen3-vl-plus`, `qwen3-max-preview`  | • Qwen via ACP<br>• persistent ACP session + memory                           |
-
----
-- **Note**: ACP agents are experimental.
+| Type     | Recommended Models                                                          | Notes                                                                                  |
+|----------|-----------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| `codex`  | `gpt-5.1`, `gpt-5.1-codex`, `gpt-5.1-codex-mini`                            | • Codex Agent<br>• persistent memory<br>• `reasoningEffort`: `low`, `medium`, `high`, `xhigh` |
+| `claude` | `claude-opus-4-5-20251101` (`opus`), `claude-sonnet-4-5-20250929` (`sonnet`) | • Claude agent<br>• persistent memory                                                  |
+| `gemini` | `gemini-3-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash`                 | • Gemini agent<br>• persistent memory                                                  |
+| `qwen`   | `qwen3-coder-plus`, `qwen3-vl-plus`, `qwen3-max-preview`                     | • Qwen agent<br>• persistent memory                                                    |
 
 ## 4. Runtime Methods
 
@@ -186,8 +180,6 @@ const result = await swarmkit.executeCommand("pytest", {
 // Raw output
 swarmkit.on("stdout", chunk => process.stdout.write(chunk));
 swarmkit.on("stderr", chunk => process.stderr.write(chunk));
-swarmkit.on("update", msg => console.log("[update]", msg));
-swarmkit.on("error", msg => console.error("[error]", msg));
 
 // Parsed output (recommended)
 swarmkit.on("content", event => console.log(event.update));
@@ -197,11 +189,9 @@ swarmkit.on("content", event => console.log(event.update));
 
 | Event | Description |
 |-------|-------------|
-| `content` | Parsed ACP-style events (recommended). Takes priority over `stdout`. |
+| `content` | Parsed ACP-style events (recommended) |
 | `stdout` | Raw JSONL output |
 | `stderr` | Stderr chunks |
-| `update` | Start/end messages. Fallback for output if no `stdout`/`content` listener. |
-| `error` | Terminal errors |
 
 **Content event types** (`event.update.sessionUpdate`):
 
@@ -262,7 +252,7 @@ Each entry includes `name`, `path`, `content`, `size`, `modifiedTime`.
 ### 4.6 Session controls
 
 ```ts
-const sessionId = await swarmkit.getSession();  // Returns sandbox ID (string) or null
+const sessionId = swarmkit.getSession();  // Returns sandbox ID (string) or null (sync)
 
 await swarmkit.pause();  // Suspends sandbox (stops billing, preserves state)
 await swarmkit.resume(); // Reactivates same sandbox
@@ -384,7 +374,7 @@ const swarmkit = new SwarmKit()
 
 await swarmkit.run({ prompt: 'Start analysis' });
 
-const sessionId = await swarmkit.getSession();
+const sessionId = swarmkit.getSession();
 // Save to file, database, environment variable, etc.
 fs.writeFileSync('session.txt', sessionId);
 
@@ -408,7 +398,7 @@ const swarmkit = new SwarmKit()
 
 // Work with first sandbox
 await swarmkit.run({ prompt: 'Analyze dataset A' });
-const sessionA = await swarmkit.getSession();
+const sessionA = swarmkit.getSession();
 
 // Switch to different sandbox
 await swarmkit.setSession('existing-sandbox-b-id');
@@ -459,15 +449,15 @@ const swarmkit = new SwarmKit()
 
 await swarmkit.run({ prompt: "Kick off analysis" });
 
-console.log(await swarmkit.getSessionTag());        // "my-project-ab12cd34"
-console.log(await swarmkit.getSessionTimestamp()); // Timestamp for first log file
+console.log(swarmkit.getSessionTag());        // "my-project-ab12cd34"
+console.log(swarmkit.getSessionTimestamp()); // Timestamp for first log file
 
 await swarmkit.kill();                              // Flushes log file for sandbox A
 
 await swarmkit.run({ prompt: "Start fresh" });      // New sandbox → new log file
 
-console.log(await swarmkit.getSessionTag());        // "my-project-f56789cd"
-console.log(await swarmkit.getSessionTimestamp()); // Timestamp for second log file
+console.log(swarmkit.getSessionTag());        // "my-project-f56789cd"
+console.log(swarmkit.getSessionTimestamp()); // Timestamp for second log file
 ```
 
 - `kill()` or `setSession()` flushes the current log; the next `run()` starts a
