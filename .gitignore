@@ -8,8 +8,8 @@ env/
 .env
 
 # Input/Output folders - contents ignored, folders created by script
-input/*
-output/*
+**/input/*
+**/output/*
 
 # IDE
 .idea/
