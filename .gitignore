@@ -7,11 +7,9 @@ venv/
 env/
 .env
 
-# Input/Output folders - track folders via .gitkeep but ignore contents
+# Input/Output folders - contents ignored, folders created by script
 input/*
-!input/.gitkeep
 output/*
-!output/.gitkeep
 
 # IDE
 .idea/
