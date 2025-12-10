@@ -63,7 +63,7 @@ swarmkit = SwarmKit(
         type='codex',
         api_key=os.getenv('SWARMKIT_API_KEY'),
         model='gpt-5.1-codex',               # (optional) Uses default if omitted
-        reasoning_effort='medium',           # (optional) 'medium' | 'high' - Only Codex agents
+        reasoning_effort='medium',           # (optional) 'low' | 'medium' | 'high' | 'xhigh' - Only Codex agents
     ),
 
     # (required) Sandbox provider for execution
@@ -119,7 +119,7 @@ All agents use a single SwarmKit API key from [dashboard.swarmlink.ai](https://d
 
 | Type     | Recommended Models                                                          | Notes                                                                                  |
 |----------|-----------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
-| `codex`  | `gpt-5.1`, `gpt-5.1-codex`, `gpt-5.1-codex-mini`                            | • Codex Agent<br>• persistent memory<br>• `reasoning_effort`: `medium`, `high` |
+| `codex`  | `gpt-5.1`, `gpt-5.1-codex`, `gpt-5.1-codex-mini`                            | • Codex Agent<br>• persistent memory<br>• `reasoning_effort`: `low`, `medium`, `high`, `xhigh` |
 | `claude` | `claude-opus-4-5-20251101` (`opus`), `claude-sonnet-4-5-20250929` (`sonnet`) | • Claude agent<br>• persistent memory                                                  |
 | `gemini` | `gemini-3-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash`                 | • Gemini agent<br>• persistent memory                                                  |
 | `qwen`   | `qwen3-coder-plus`, `qwen3-vl-plus`, `qwen3-max-preview`                     | • Qwen agent<br>• persistent memory                                                    |
@@ -145,6 +145,7 @@ Runs the agent with a given prompt.
 result = await swarmkit.run(
     prompt='Analyze the data and create a report',
     timeout_ms=15 * 60 * 1000,                # (optional) Default 1 hour
+    background=False,                          # (optional) Run in background
 )
 
 print(result.exit_code)
@@ -152,6 +153,7 @@ print(result.stdout)
 ```
 
 - If `timeout_ms` is omitted the agent uses the default of 3_600_000 ms (1 hour).
+- If `background` is `True`, the call returns immediately while the agent continues running.
 
 - Calling `run()` multiple times maintains the agent context / history.
 
@@ -540,13 +542,13 @@ Additionally, every run and command is logged locally to structured JSON lines u
 - `{tag}` – `my-prefix-` + 16 random hex characters (e.g. `my-prefix-a1b2c3d4e5f6g7h8`)
 - `{provider}` – the sandbox provider (e.g. `e2b`)
 - `{sandboxId}` – the active sandbox ID
-- `{agent}` – the agent type (`codex`, `acp-qwen`, …)
+- `{agent}` – the agent type (`codex`, `claude`, `gemini`, `qwen`)
 - `{timestamp}` – ISO timestamp with `:` and `.` replaced by `-`
 
 Each file contains three entry types:
 
 ```json
-{"_meta":{"tag":"my-prefix-a1b2c3d4","provider":"e2b","sandbox_id":"sbx_123","agent":"acp-qwen","timestamp":"2025-10-26T20:15:17.984Z"}}
+{"_meta":{"tag":"my-prefix-a1b2c3d4","provider":"e2b","sandbox_id":"sbx_123","agent":"qwen","timestamp":"2025-10-26T20:15:17.984Z"}}
 {"_prompt":{"text":"hello how are you?"}}
 {"jsonrpc":"2.0","method":"session/update", ...}
 ```
