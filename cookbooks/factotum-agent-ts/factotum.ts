@@ -1,13 +1,22 @@
 /**
  * Factotum Agent - An interactive chat with a sandboxed AI agent that can think, execute code,
  * browse the web, read / edit files, and solve complex tasks.
- * Ask for anything—any files the agent creates are automatically downloaded to your local `output/` folder.
+ *
+ * - Put files in `input/` folder - they're uploaded to the agent's context before each run
+ * - Files the agent creates are automatically downloaded to your `output/` folder
  *
  * Run: npx tsx factotum.ts
  */
 import { SwarmKit } from "@swarmkit/sdk";
 import { createE2BProvider } from "@swarmkit/e2b";
-import { mkdirSync, writeFileSync } from "fs";
+import {
+  mkdirSync,
+  writeFileSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+} from "fs";
+import { join } from "path";
 import { createInterface } from "readline";
 import "dotenv/config";
 
@@ -17,7 +26,7 @@ import "dotenv/config";
 
 const sandbox = createE2BProvider({
   apiKey: process.env.E2B_API_KEY!,
-  timeoutMs: 3_600_000,
+  defaultTimeoutMs: 3_600_000,
 });
 
 const mcpServers: Record<string, any> = {};
@@ -51,8 +60,10 @@ const agent = new SwarmKit()
     model: "gemini-3-pro-preview",
   })
   .withSandbox(sandbox)
-  .withSystemPrompt(`You are Factotum, a powerful autonomous AI agent.
-You can execute code, browse the web, manage files, and solve complex tasks.`)
+  .withSystemPrompt(
+    `You are Factotum, a powerful autonomous AI agent.
+You can execute code, browse the web, manage files, and solve complex tasks.`
+  )
   .withMcpServers(mcpServers)
   .withSessionTagPrefix("factotum-agent-ts");
 
@@ -60,6 +71,23 @@ You can execute code, browse the web, manage files, and solve complex tasks.`)
 
 const rl = createInterface({ input: process.stdin, output: process.stdout });
 const ask = (q: string) => new Promise<string>((r) => rl.question(q, r));
+
+/** Read all files from input/ directory and return as a map of filename -> Buffer */
+function getInputFiles(): Record<string, Buffer> {
+  const inputDir = "input";
+  const files: Record<string, Buffer> = {};
+  try {
+    for (const name of readdirSync(inputDir)) {
+      const path = join(inputDir, name);
+      if (statSync(path).isFile()) {
+        files[name] = readFileSync(path);
+      }
+    }
+  } catch {
+    // Directory doesn't exist or is empty
+  }
+  return files;
+}
 
 async function main() {
   agent.on("content", (event) => console.log(event.update));
@@ -75,6 +103,13 @@ async function main() {
     }
 
     console.log();
+
+    // Upload input files to agent's context
+    const inputFiles = getInputFiles();
+    if (Object.keys(inputFiles).length > 0) {
+      await agent.uploadContext(inputFiles);
+    }
+
     await agent.run({ prompt });
 
     for (const f of await agent.getOutputFiles()) {
@@ -85,6 +120,7 @@ async function main() {
   }
 }
 
+mkdirSync("input", { recursive: true });
 mkdirSync("output", { recursive: true });
 main().catch(console.error);
 process.on("SIGINT", async () => {
